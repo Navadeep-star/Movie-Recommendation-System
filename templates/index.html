@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie Semantic Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>🎬 Movie Recommender</h1>
+    <p class="subtitle">Describe the kind of movie you're in the mood for</p>
+
+    <div class="input-area">
+        <input
+            type="text"
+            id="query"
+            placeholder="e.g. a superhero team saving the world with humor"
+            onkeypress="if(event.key==='Enter') searchMovies()"
+        >
+        <button onclick="searchMovies()">Search</button>
+    </div>
+
+    <div id="results"></div>
+
+</div>
+
+<script>
+
+async function searchMovies() {
+
+    let input = document.getElementById("query");
+    let query = input.value.trim();
+
+    if (query === "") return;
+
+    let resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "<p class='loading'>Searching...</p>";
+
+    const response = await fetch("/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: query })
+    });
+
+    const data = await response.json();
+
+    resultsDiv.innerHTML = "";
+
+    data.results.forEach(movie => {
+        resultsDiv.innerHTML += `
+            <div class="movie-card">
+                <div class="movie-header">
+                    <span class="movie-title">${movie.title} (${movie.year})</span>
+                    <span class="movie-score">match: ${movie.score}</span>
+                </div>
+                <div class="movie-genre">${movie.genre} • ⭐ ${movie.rating}</div>
+                <div class="movie-desc">${movie.description}</div>
+            </div>
+        `;
+    });
+}
+
+</script>
+
+</body>
+</html>
